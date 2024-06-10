@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap5
@@ -27,7 +28,7 @@ This will install the packages from the requirements.txt for this project.
 '''
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret'
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -42,7 +43,7 @@ class Base(DeclarativeBase):
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
@@ -157,6 +158,7 @@ def logout():
 
 @app.route('/')
 def get_all_posts():
+    print(os.environ.get('FLASK_KEY'))
     result = db.session.execute(db.select(BlogPosts)).scalars()
     posts = result.all()
     return render_template("index.html", all_posts=posts, logged_in=current_user)
